@@ -64,7 +64,7 @@ var (
 			Name: "num_mongo_errors",
 			Help: "Number of mongo request errors.",
 		},
-		[]string{"method", "type"},
+		[]string{"method"},
 	)
 
 	mongoDurationTimeMs = prometheus.NewSummaryVec(
