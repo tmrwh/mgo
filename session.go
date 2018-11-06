@@ -53,24 +53,24 @@ import (
 var (
 	numMongoReqs = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "num_mongo_requests",
-			Help: "Number of mongo db requests.",
+			Name: "num_mgo_requests",
+			Help: "Number of db requests from mgo",
 		},
 		[]string{"method"},
 	)
 
 	numMongoErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "num_mongo_errors",
-			Help: "Number of mongo request errors.",
+			Name: "num_mgo_errors",
+			Help: "Number of errors on mgo requests",
 		},
 		[]string{"method"},
 	)
 
 	mongoDurationTimeMs = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Name:       "mongo_duration_time_ms",
-			Help:       "mongo duration time",
+			Name:       "mgo_duration_time_ms",
+			Help:       "mgo request duration time",
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"method"},
