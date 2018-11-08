@@ -3844,7 +3844,7 @@ func (q *Query) One(result interface{}) (err error) {
 		}
 	}
 
-	err := checkQueryError(op.collection, data)
+	err = checkQueryError(op.collection, data)
 	if err != nil {
 		numMongoErrors.WithLabelValues("query").Inc()
 	}
