@@ -2890,7 +2890,11 @@ func (iter *Iter) State() (int64, []bson.Raw) {
 func (p *Pipe) All(result interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("query").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second && p.collection != nil {
+			logf("Query pipe operation takes more than 1 sec [%v]", p.collection.Name)
+		}
+		mongoDurationTimeMs.WithLabelValues("query").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("query").Inc()
 	err := p.Iter().All(result)
@@ -2906,7 +2910,11 @@ func (p *Pipe) All(result interface{}) error {
 func (p *Pipe) One(result interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("query").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second && p.collection != nil {
+			logf("Query pipe operation takes more than 1 sec [%v]", p.collection.Name)
+		}
+		mongoDurationTimeMs.WithLabelValues("query").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("query").Inc()
 
@@ -3057,7 +3065,11 @@ func IsDup(err error) bool {
 func (c *Collection) Insert(docs ...interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("insert").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Insert operation takes more than 1 sec [%v %v]", c.FullName, docs)
+		}
+		mongoDurationTimeMs.WithLabelValues("insert").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("insert").Inc()
 
@@ -3082,7 +3094,11 @@ func (c *Collection) Insert(docs ...interface{}) error {
 func (c *Collection) Update(selector interface{}, update interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("update").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Update operation takes more than 1 sec [%v %v %v]", c.FullName, selector, update)
+		}
+		mongoDurationTimeMs.WithLabelValues("update").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("update").Inc()
 
@@ -3140,7 +3156,11 @@ type ChangeInfo struct {
 func (c *Collection) UpdateAll(selector interface{}, update interface{}) (info *ChangeInfo, err error) {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("updateall").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("UpdateAll operation takes more than 1 sec [%v %v %v]", c.FullName, selector, update)
+		}
+		mongoDurationTimeMs.WithLabelValues("updateall").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("updateall").Inc()
 
@@ -3180,7 +3200,11 @@ func (c *Collection) UpdateAll(selector interface{}, update interface{}) (info *
 func (c *Collection) Upsert(selector interface{}, update interface{}) (info *ChangeInfo, err error) {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("upsert").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Upsert operation takes more than 1 sec [%v %v %v]", c.FullName, selector, update)
+		}
+		mongoDurationTimeMs.WithLabelValues("upsert").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("upsert").Inc()
 
@@ -3240,7 +3264,11 @@ func (c *Collection) UpsertId(id interface{}, update interface{}) (info *ChangeI
 func (c *Collection) Remove(selector interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("remove").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Remove operation takes more than 1 sec [%v %v %v]", c.FullName, selector)
+		}
+		mongoDurationTimeMs.WithLabelValues("remove").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("remove").Inc()
 
@@ -3279,7 +3307,11 @@ func (c *Collection) RemoveId(id interface{}) error {
 func (c *Collection) RemoveAll(selector interface{}) (info *ChangeInfo, err error) {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("removeall").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Remove operation takes more than 1 sec [%v %v %v]", c.FullName, selector)
+		}
+		mongoDurationTimeMs.WithLabelValues("removeall").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("removeall").Inc()
 
@@ -3798,7 +3830,11 @@ Error:
 func (q *Query) One(result interface{}) (err error) {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("query").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Query one operation takes more than 1 sec [%v %v]", q.op.collection, q.op.selector)
+		}
+		mongoDurationTimeMs.WithLabelValues("query").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("query").Inc()
 
@@ -4559,7 +4595,11 @@ func (iter *Iter) Next(result interface{}) bool {
 func (iter *Iter) All(result interface{}) error {
 	start := time.Now()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("query").Observe(time.Since(start).Seconds() * 1000.0)
+		duration := time.Since(start)
+		if duration > 1*time.Second {
+			logf("Query one operation takes more than 1 sec [%v]", iter.op)
+		}
+		mongoDurationTimeMs.WithLabelValues("query").Observe(duration.Seconds() * 1000.0)
 	}()
 	numMongoReqs.WithLabelValues("query").Inc()
 
