@@ -48,6 +48,7 @@ import (
 
 	"github.com/globalsign/mgo/bson"
 	opentracing "github.com/opentracing/opentracing-go"
+	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -2648,7 +2649,7 @@ func (c *Collection) Find(query interface{}) *Query {
 func (c *Collection) FindWithContext(ctx context.Context, query interface{}) *Query {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Find")
 	defer span.Finish()
-	serverSpan.LogFields(
+	span.LogFields(
 		otlog.String("query", fmt.Sprintf("%v", query)),
 	)
 
