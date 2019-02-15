@@ -4684,6 +4684,7 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 	span.LogFields(
 		otlog.String("result", fmt.Sprintf("%v", result)),
 	)
+	var err error
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -4692,7 +4693,8 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 		}
 	}()
 
-	return q.All(result)
+	err = q.All(result)
+	return err
 }
 
 // For method is obsolete and will be removed in a future release.
