@@ -3071,6 +3071,27 @@ func IsDup(err error) bool {
 	return false
 }
 
+func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{}) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Insert")
+	defer span.Finish()
+
+	span.LogFields(
+		otlog.String("insert content:", fmt.Sprintf("%v", docs)),
+	)
+
+	var err error
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", err.Error()),
+			)
+		}
+	}()
+
+	err = c.Insert(docs...)
+	return err
+}
+
 // Insert inserts one or more documents in the respective collection.  In
 // case the session is in safe mode (see the SetSafe method) and an error
 // happens while inserting the provided documents, the returned error will
@@ -3932,7 +3953,8 @@ func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err err
 		}
 	}()
 
-	return q.One(result)
+	err = q.One(result)
+	return err
 }
 
 // prepareFindOp translates op from being an old-style wire protocol query into
