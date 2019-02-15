@@ -27,6 +27,7 @@
 package mgo
 
 import (
+	"context"
 	"crypto/md5"
 	"crypto/tls"
 	"crypto/x509"
@@ -46,6 +47,7 @@ import (
 	"time"
 
 	"github.com/globalsign/mgo/bson"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -2634,6 +2636,22 @@ func (s *Session) FsyncUnlock() error {
 //     http://www.mongodb.org/display/DOCS/Advanced+Queries
 //
 func (c *Collection) Find(query interface{}) *Query {
+	session := c.Database.Session
+	session.m.RLock()
+	q := &Query{session: session, query: session.queryConfig}
+	session.m.RUnlock()
+	q.op.query = query
+	q.op.collection = c.FullName
+	return q
+}
+
+func (c *Collection) FindWithContext(ctx context.Context, query interface{}) *Query {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Find")
+	defer span.Finish()
+	serverSpan.LogFields(
+		otlog.String("query", fmt.Sprintf("%v", query)),
+	)
+
 	session := c.Database.Session
 	session.m.RLock()
 	q := &Query{session: session, query: session.queryConfig}
