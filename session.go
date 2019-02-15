@@ -4678,6 +4678,23 @@ func (q *Query) All(result interface{}) error {
 	return q.Iter().All(result)
 }
 
+func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Query.All")
+	defer span.Finish()
+	span.LogFields(
+		otlog.String("result", fmt.Sprintf("%v", result)),
+	)
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		}
+	}()
+
+	return q.All(result)
+}
+
 // For method is obsolete and will be removed in a future release.
 // See Iter as an elegant replacement.
 func (q *Query) For(result interface{}, f func() error) error {
