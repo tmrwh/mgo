@@ -2653,13 +2653,7 @@ func (c *Collection) FindWithContext(ctx context.Context, query interface{}) *Qu
 		otlog.String("query", fmt.Sprintf("%v", query)),
 	)
 
-	session := c.Database.Session
-	session.m.RLock()
-	q := &Query{session: session, query: session.queryConfig}
-	session.m.RUnlock()
-	q.op.query = query
-	q.op.collection = c.FullName
-	return q
+	return c.Find(query)
 }
 
 type repairCmd struct {
@@ -3922,6 +3916,23 @@ func (q *Query) One(result interface{}) (err error) {
 		numMongoErrors.WithLabelValues("query").Inc()
 	}
 	return err
+}
+
+func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.One")
+	defer span.Finish()
+	span.LogFields(
+		otlog.String("result", fmt.Sprintf("%v", result)),
+	)
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		}
+	}()
+
+	return q.One(result)
 }
 
 // prepareFindOp translates op from being an old-style wire protocol query into
