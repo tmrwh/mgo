@@ -3076,7 +3076,7 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 	defer span.Finish()
 
 	span.LogFields(
-		otlog.String("insert content:", fmt.Sprintf("%v", docs)),
+		otlog.String("docs", fmt.Sprintf("%v", docs)),
 	)
 
 	var err error
@@ -3111,6 +3111,24 @@ func (c *Collection) Insert(docs ...interface{}) error {
 	if err != nil {
 		numMongoErrors.WithLabelValues("insert").Inc()
 	}
+	return err
+}
+func (c *Collection) UpdateWithContext(ctx context.Context, selector interface{}, update interface{}) (err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Update")
+	defer span.Finish()
+	span.LogFields(
+		otlog.String("selector", fmt.Sprintf("%v", selector)),
+		otlog.String("update", fmt.Sprintf("%v", update)),
+	)
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		}
+	}()
+
+	err = c.Update(selector, update)
 	return err
 }
 
