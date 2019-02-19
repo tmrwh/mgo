@@ -3337,6 +3337,23 @@ func (c *Collection) RemoveId(id interface{}) error {
 	return c.Remove(bson.D{{Name: "_id", Value: id}})
 }
 
+func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interface{}) (info *ChangeInfo, err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.RemoveAll")
+	defer span.Finish()
+	span.LogFields(
+		otlog.String("selector", fmt.Sprintf("%v", selector)),
+	)
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		}
+	}()
+	info, err = c.RemoveAll(selector)
+	return
+}
+
 // RemoveAll finds all documents matching the provided selector document
 // and removes them from the database.  In case the session is in safe mode
 // (see the SetSafe method) and an error happens when attempting the change,
