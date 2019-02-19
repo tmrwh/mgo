@@ -2646,16 +2646,6 @@ func (c *Collection) Find(query interface{}) *Query {
 	return q
 }
 
-func (c *Collection) FindWithContext(ctx context.Context, query interface{}) *Query {
-	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Find")
-	defer span.Finish()
-	span.LogFields(
-		otlog.String("query", fmt.Sprintf("%v", query)),
-	)
-
-	return c.Find(query)
-}
-
 type repairCmd struct {
 	RepairCursor string           `bson:"repairCursor"`
 	Cursor       *repairCmdCursor `bson:",omitempty"`
