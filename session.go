@@ -3348,6 +3348,10 @@ func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interfac
 			span.LogFields(
 				otlog.String("err", fmt.Sprintf("%v", err)),
 			)
+		} else {
+			span.LogFields(
+				otlog.String("change_info", fmt.Sprintf("%v", info)),
+			)
 		}
 	}()
 	info, err = c.RemoveAll(selector)
@@ -3967,13 +3971,14 @@ func (q *Query) One(result interface{}) (err error) {
 func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.One")
 	defer span.Finish()
-	span.LogFields(
-		otlog.String("result", fmt.Sprintf("%v", result)),
-	)
 	defer func() {
 		if err != nil {
 			span.LogFields(
 				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		} else {
+			span.LogFields(
+				otlog.String("result", fmt.Sprintf("%v", result)),
 			)
 		}
 	}()
@@ -4728,14 +4733,15 @@ func (q *Query) All(result interface{}) error {
 func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Query.All")
 	defer span.Finish()
-	span.LogFields(
-		otlog.String("result", fmt.Sprintf("%v", result)),
-	)
 	var err error
 	defer func() {
 		if err != nil {
 			span.LogFields(
 				otlog.String("err", fmt.Sprintf("%v", err)),
+			)
+		} else {
+			span.LogFields(
+				otlog.String("result", fmt.Sprintf("%v", result)),
 			)
 		}
 	}()
@@ -5223,6 +5229,32 @@ type valueResult struct {
 //     http://www.mongodb.org/display/DOCS/Updating
 //     http://www.mongodb.org/display/DOCS/Atomic+Operations
 //
+
+func (q *Query) ApplyWithContext(ctx context.Context, change Change, result interface{}) (info *ChangeInfo, err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Apply")
+	defer span.Finish()
+
+	span.LogFields(
+		otlog.String("change", fmt.Sprintf("%v", change)),
+	)
+
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", err.Error()),
+			)
+		} else {
+			span.LogFields(
+				otlog.String("result", fmt.Sprintf("%v", result)),
+				otlog.String("change_info", fmt.Sprintf("%v", info)),
+			)
+		}
+	}()
+
+	info, err = q.Apply(change, result)
+	return
+}
+
 func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err error) {
 	q.m.Lock()
 	session := q.session
