@@ -3971,6 +3971,9 @@ func (q *Query) One(result interface{}) (err error) {
 func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.One")
 	defer span.Finish()
+	span.LogFields(
+		otlog.String("query", fmt.Sprintf("%v", q.op.query)),
+	)
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -4734,6 +4737,11 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Query.All")
 	defer span.Finish()
 	var err error
+
+	span.LogFields(
+		otlog.String("query", fmt.Sprintf("%v", q.op.query)),
+	)
+
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -4891,6 +4899,9 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Apply")
 	defer span.Finish()
 
+	span.LogFields(
+		otlog.String("query", fmt.Sprintf("%v", q.op.query)),
+	)
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -5255,6 +5266,7 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 
 	span.LogFields(
 		otlog.String("change", fmt.Sprintf("%v", change)),
+		otlog.String("query", fmt.Sprintf("%v", q.op.query)),
 	)
 
 	defer func() {
