@@ -4887,6 +4887,25 @@ type countCmd struct {
 	Collation *Collation `bson:"collation,omitempty"`
 }
 
+func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Apply")
+	defer span.Finish()
+
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", err.Error()),
+			)
+		} else {
+			span.LogFields(
+				otlog.String("count", fmt.Sprintf("%d", n)),
+			)
+		}
+	}()
+	n, err = q.Count()
+	return
+}
+
 // Count returns the total number of documents in the result set.
 func (q *Query) Count() (n int, err error) {
 	q.m.Lock()
