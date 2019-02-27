@@ -3303,6 +3303,26 @@ func (c *Collection) UpsertId(id interface{}, update interface{}) (info *ChangeI
 //
 //     http://www.mongodb.org/display/DOCS/Removing
 //
+func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Remove")
+	defer span.Finish()
+
+	span.LogFields(
+		otlog.String("selector", fmt.Sprintf("%v", selector)),
+	)
+
+	var err error
+	defer func() {
+		if err != nil {
+			span.LogFields(
+				otlog.String("err", err.Error()),
+			)
+		}
+	}()
+
+	err = c.Remove(selector)
+	return err
+}
 func (c *Collection) Remove(selector interface{}) error {
 	start := time.Now()
 	defer func() {
