@@ -5307,6 +5307,8 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 }
 
 func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err error) {
+	numMongoReqs.WithLabelValues("apply").Inc()
+
 	q.m.Lock()
 	session := q.session
 	op := q.op // Copy.
@@ -5314,6 +5316,7 @@ func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err 
 
 	c := strings.Index(op.collection, ".")
 	if c < 0 {
+		numMongoErrors.WithLabelValues("apply").Inc()
 		return nil, errors.New("bad collection name: " + op.collection)
 	}
 
@@ -5359,16 +5362,19 @@ func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err 
 			continue
 		}
 		if qerr, ok := err.(*QueryError); ok && qerr.Message == "No matching object found" {
+			numMongoErrors.WithLabelValues("apply").Inc()
 			return nil, ErrNotFound
 		}
 		return nil, err
 	}
 	if doc.LastError.N == 0 {
+		numMongoErrors.WithLabelValues("apply").Inc()
 		return nil, ErrNotFound
 	}
 	if doc.Value.Kind != 0x0A && result != nil {
 		err = doc.Value.Unmarshal(result)
 		if err != nil {
+			numMongoErrors.WithLabelValues("apply").Inc()
 			return nil, err
 		}
 	}
@@ -5389,6 +5395,7 @@ func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err 
 		lerr.Code = e.Code
 		lerr.Err = e.ErrMsg
 		err = &lerr
+		numMongoErrors.WithLabelValues("apply").Inc()
 		return info, err
 	}
 	return info, nil
