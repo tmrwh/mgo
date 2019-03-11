@@ -4916,7 +4916,7 @@ type countCmd struct {
 }
 
 func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Apply")
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Count")
 	defer span.Finish()
 
 	span.LogFields(
@@ -5307,6 +5307,9 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 }
 
 func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err error) {
+	start := time.Now()
+	defer func() { mongoDurationTimeMs.WithLabelValues("apply").Observe(time.Since(start).Seconds * 1000.0) }()
+
 	numMongoReqs.WithLabelValues("apply").Inc()
 
 	q.m.Lock()
