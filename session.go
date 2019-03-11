@@ -85,7 +85,7 @@ func init() {
 	prometheus.MustRegister(numMongoErrors)
 	prometheus.MustRegister(mongoDurationTimeMs)
 
-	for _, v := range []string{"update", "updateall", "query", "insert", "upsert", "remove", "removeall"} {
+	for _, v := range []string{"update", "updateall", "query", "insert", "upsert", "remove", "removeall", "apply", "count"} {
 		numMongoReqs.WithLabelValues(v)
 		numMongoErrors.WithLabelValues(v)
 		mongoDurationTimeMs.WithLabelValues(v)
@@ -4939,6 +4939,15 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 
 // Count returns the total number of documents in the result set.
 func (q *Query) Count() (n int, err error) {
+	start := time.Now()
+	numMongoReqs.WithLabelValues("count").Inc()
+	defer func() {
+		mongoDurationTimeMs.WithLabelValues("apply").Observe(time.Since(start).Seconds * 1000.0)
+		if err != nil {
+			numMongoErrors.WithLabelValues("count").Inc()
+		}
+	}()
+
 	q.m.Lock()
 	session := q.session
 	op := q.op
