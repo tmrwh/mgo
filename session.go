@@ -4916,7 +4916,7 @@ type countCmd struct {
 }
 
 func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Apply")
+	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Count")
 	defer span.Finish()
 
 	span.LogFields(
