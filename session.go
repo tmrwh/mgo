@@ -4942,7 +4942,7 @@ func (q *Query) Count() (n int, err error) {
 	start := time.Now()
 	numMongoReqs.WithLabelValues("count").Inc()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("count").Observe(time.Since(start).Seconds * 1000.0)
+		mongoDurationTimeMs.WithLabelValues("count").Observe(time.Since(start).Seconds() * 1000.0)
 		if err != nil {
 			numMongoErrors.WithLabelValues("count").Inc()
 		}
@@ -5317,7 +5317,7 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 
 func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err error) {
 	start := time.Now()
-	defer func() { mongoDurationTimeMs.WithLabelValues("apply").Observe(time.Since(start).Seconds * 1000.0) }()
+	defer func() { mongoDurationTimeMs.WithLabelValues("apply").Observe(time.Since(start).Seconds() * 1000.0) }()
 
 	numMongoReqs.WithLabelValues("apply").Inc()
 
