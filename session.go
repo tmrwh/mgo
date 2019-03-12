@@ -4942,7 +4942,7 @@ func (q *Query) Count() (n int, err error) {
 	start := time.Now()
 	numMongoReqs.WithLabelValues("count").Inc()
 	defer func() {
-		mongoDurationTimeMs.WithLabelValues("count").Observe(time.Since(start).Seconds * 1000.0)
+		mongoDurationTimeMs.WithLabelValues("count").Observe(time.Since(start).Seconds() * 1000.0)
 		if err != nil {
 			numMongoErrors.WithLabelValues("count").Inc()
 		}
