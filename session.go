@@ -3062,6 +3062,7 @@ func IsDup(err error) bool {
 }
 
 func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{}) error {
+
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Insert")
 	defer span.Finish()
 
