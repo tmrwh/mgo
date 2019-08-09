@@ -3080,7 +3080,7 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 
 	ch := make(chan error, 1)
 	go func() {
-		err = r.Insert(docs...)
+		err = c.Insert(docs...)
 		ch <- err
 	}()
 
@@ -4813,7 +4813,6 @@ func (q *Query) All(result interface{}) error {
 func (q *Query) AllWithContext(ctx context.Context, result interface{}) (err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Query.All")
 	defer span.Finish()
-	var err error
 
 	span.LogFields(
 		otlog.String("query", fmt.Sprintf("%v", q.op.query)),
@@ -4841,7 +4840,6 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) (err err
 	case <-ctx.Done():
 		err = ctx.Err()
 		return
-
 	case <-ch:
 		return
 	}
