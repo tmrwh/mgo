@@ -5001,19 +5001,21 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 		}
 	}()
 
-	ch := make(chan error, 1)
-	go func() {
-		n, err = q.Count()
-		ch <- err
-	}()
+	return q.Count()
+	/*
+		ch := make(chan error, 1)
+		go func() {
+			n, err = q.Count()
+			ch <- err
+		}()
 
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-		return
-	case <-ch:
-		return
-	}
+		select {
+		case <-ctx.Done():
+			err = ctx.Err()
+			return
+		case <-ch:
+			return
+		}*/
 }
 
 // Count returns the total number of documents in the result set.
