@@ -3086,7 +3086,6 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return ctx.Err()
 	case err := <-ch:
 		return err
@@ -3137,7 +3136,6 @@ func (c *Collection) UpdateWithContext(ctx context.Context, selector interface{}
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return ctx.Err()
 	case err := <-ch:
 		return err
@@ -3350,7 +3348,6 @@ func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return ctx.Err()
 	case err := <-ch:
 		return err
@@ -3416,7 +3413,6 @@ func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interfac
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return nil, ctx.Err()
 	case err := <-ch:
 		return info, err
@@ -4059,7 +4055,6 @@ func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err err
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return ctx.Err()
 	case err := <-ch:
 		return err
@@ -4838,7 +4833,6 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return ctx.Err()
 	case err := <-ch:
 		return err
@@ -5009,7 +5003,6 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 
 	select {
 	case <-ctx.Done():
-		<-ch
 		return 0, ctx.Err()
 	case err := <-ch:
 		return n, err
