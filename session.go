@@ -4810,7 +4810,7 @@ func (q *Query) All(result interface{}) error {
 	return q.Iter().All(result)
 }
 
-func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
+func (q *Query) AllWithContext(ctx context.Context, result interface{}) (err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Query.All")
 	defer span.Finish()
 	var err error
