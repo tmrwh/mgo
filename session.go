@@ -3078,8 +3078,18 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 		}
 	}()
 
-	err = c.Insert(docs...)
-	return err
+	ch := make(chan error, 1)
+	go func() {
+		ch <- c.Insert(docs...)
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return ctx.Err()
+	case err := <-ch:
+		return err
+	}
 }
 
 // Insert inserts one or more documents in the respective collection.  In
@@ -3118,8 +3128,19 @@ func (c *Collection) UpdateWithContext(ctx context.Context, selector interface{}
 		}
 	}()
 
-	err = c.Update(selector, update)
-	return err
+	ch := make(chan error, 1)
+	go func() {
+		err = c.Update(selector, update)
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return ctx.Err()
+	case err := <-ch:
+		return err
+	}
 }
 
 // Update finds a single document matching the provided selector document
@@ -3320,8 +3341,19 @@ func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}
 		}
 	}()
 
-	err = c.Remove(selector)
-	return err
+	ch := make(chan error, 1)
+	go func() {
+		err = c.Remove(selector)
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return ctx.Err()
+	case err := <-ch:
+		return err
+	}
 }
 func (c *Collection) Remove(selector interface{}) error {
 	start := time.Now()
@@ -3374,8 +3406,20 @@ func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interfac
 			)
 		}
 	}()
-	info, err = c.RemoveAll(selector)
-	return
+
+	ch := make(chan error, 1)
+	go func() {
+		info, err = c.RemoveAll(selector)
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return nil, ctx.Err()
+	case err := <-ch:
+		return info, err
+	}
 }
 
 // RemoveAll finds all documents matching the provided selector document
@@ -4006,8 +4050,19 @@ func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err err
 		}
 	}()
 
-	err = q.One(result)
-	return err
+	ch := make(chan error, 1)
+	go func() {
+		err = q.One(result)
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return ctx.Err()
+	case err := <-ch:
+		return err
+	}
 }
 
 // prepareFindOp translates op from being an old-style wire protocol query into
@@ -4711,6 +4766,7 @@ func (iter *Iter) All(result interface{}) error {
 	resultv := reflect.ValueOf(result)
 	if resultv.Kind() != reflect.Ptr {
 		panic("result argument must be a slice address")
+
 	}
 
 	slicev := resultv.Elem()
@@ -4774,8 +4830,18 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 		}
 	}()
 
-	err = q.All(result)
-	return err
+	ch := make(chan error, 1)
+	go func() {
+		ch <- q.All(result)
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return ctx.Err()
+	case err := <-ch:
+		return err
+	}
 }
 
 // For method is obsolete and will be removed in a future release.
@@ -4933,8 +4999,20 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 			)
 		}
 	}()
-	n, err = q.Count()
-	return
+
+	ch := make(chan error, 1)
+	go func() {
+		n, err = q.Count()
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return 0, ctx.Err()
+	case err := <-ch:
+		return n, err
+	}
 }
 
 // Count returns the total number of documents in the result set.
@@ -5311,8 +5389,19 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 		}
 	}()
 
-	info, err = q.Apply(change, result)
-	return
+	ch := make(chan error, 1)
+	go func() {
+		info, err = q.Apply(change, result)
+		ch <- err
+	}()
+
+	select {
+	case <-ctx.Done():
+		<-ch
+		return nil, ctx.Err()
+	case err := <-ch:
+		return info, err
+	}
 }
 
 func (q *Query) Apply(change Change, result interface{}) (info *ChangeInfo, err error) {
