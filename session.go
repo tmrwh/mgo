@@ -3061,7 +3061,7 @@ func IsDup(err error) bool {
 	return false
 }
 
-func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{}) error {
+func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{}) (err error) {
 
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Insert")
 	defer span.Finish()
@@ -3070,7 +3070,6 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 		otlog.String("docs", fmt.Sprintf("%v", docs)),
 	)
 
-	var err error
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -3081,14 +3080,16 @@ func (c *Collection) InsertWithContext(ctx context.Context, docs ...interface{})
 
 	ch := make(chan error, 1)
 	go func() {
-		ch <- c.Insert(docs...)
+		err = r.Insert(docs...)
+		ch <- err
 	}()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-ch:
-		return err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 
@@ -3136,9 +3137,10 @@ func (c *Collection) UpdateWithContext(ctx context.Context, selector interface{}
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-ch:
-		return err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 
@@ -3323,7 +3325,7 @@ func (c *Collection) UpsertId(id interface{}, update interface{}) (info *ChangeI
 //
 //     http://www.mongodb.org/display/DOCS/Removing
 //
-func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}) error {
+func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}) (err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.Remove")
 	defer span.Finish()
 
@@ -3331,7 +3333,6 @@ func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}
 		otlog.String("selector", fmt.Sprintf("%v", selector)),
 	)
 
-	var err error
 	defer func() {
 		if err != nil {
 			span.LogFields(
@@ -3348,9 +3349,10 @@ func (c *Collection) RemoveWithContext(ctx context.Context, selector interface{}
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-ch:
-		return err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 func (c *Collection) Remove(selector interface{}) error {
@@ -3390,6 +3392,7 @@ func (c *Collection) RemoveId(id interface{}) error {
 func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interface{}) (info *ChangeInfo, err error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "mongo.RemoveAll")
 	defer span.Finish()
+
 	span.LogFields(
 		otlog.String("selector", fmt.Sprintf("%v", selector)),
 	)
@@ -3413,9 +3416,10 @@ func (c *Collection) RemoveAllWithContext(ctx context.Context, selector interfac
 
 	select {
 	case <-ctx.Done():
-		return nil, ctx.Err()
-	case err := <-ch:
-		return info, err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 
@@ -4055,9 +4059,10 @@ func (q *Query) OneWithContext(ctx context.Context, result interface{}) (err err
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-ch:
-		return err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 
@@ -4828,14 +4833,17 @@ func (q *Query) AllWithContext(ctx context.Context, result interface{}) error {
 
 	ch := make(chan error, 1)
 	go func() {
-		ch <- q.All(result)
+		err = q.All(result)
+		ch <- err
 	}()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-ch:
-		return err
+		err = ctx.Err()
+		return
+
+	case <-ch:
+		return
 	}
 }
 
@@ -5003,9 +5011,10 @@ func (q *Query) CountWithContext(ctx context.Context) (n int, err error) {
 
 	select {
 	case <-ctx.Done():
-		return 0, ctx.Err()
-	case err := <-ch:
-		return n, err
+		err = ctx.Err()
+		return
+	case <-ch:
+		return
 	}
 }
 
@@ -5391,10 +5400,11 @@ func (q *Query) ApplyWithContext(ctx context.Context, change Change, result inte
 
 	select {
 	case <-ctx.Done():
-		<-ch
-		return nil, ctx.Err()
-	case err := <-ch:
-		return info, err
+		err = ctx.Err()
+		return
+
+	case <-ch:
+		return
 	}
 }
 
