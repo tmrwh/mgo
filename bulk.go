@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tmrwh/mgo/bson"
+	"github.com/globalsign/mgo/bson"
 )
 
 // Bulk represents an operation that can be prepared with several

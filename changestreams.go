@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tmrwh/mgo/bson"
+	"github.com/globalsign/mgo/bson"
 )
 
 type FullDocument string

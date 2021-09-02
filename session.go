@@ -46,10 +46,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/globalsign/mgo/bson"
 	opentracing "github.com/opentracing/opentracing-go"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/tmrwh/mgo/bson"
 )
 
 // Prometheus Metrics

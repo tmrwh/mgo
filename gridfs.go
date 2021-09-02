@@ -36,7 +36,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tmrwh/mgo/bson"
+	"github.com/globalsign/mgo/bson"
 )
 
 // GridFS stores files in two collections:

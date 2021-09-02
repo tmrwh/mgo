@@ -1,4 +1,4 @@
-module github.com/tmrwh/mgo
+module github.com/globalsign/mgo
 
 go 1.15
 

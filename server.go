@@ -34,7 +34,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tmrwh/mgo/bson"
+	"github.com/globalsign/mgo/bson"
 )
 
 // coarseTime is used to amortise the cost of querying the timecounter (possibly
